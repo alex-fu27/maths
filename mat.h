@@ -83,6 +83,8 @@ struct Mat
     T&            operator()(size_t r, size_t c);
     const T&      operator()(size_t r, size_t c) const;
 
+    bool operator==(const Mat<R, C, T>&) const;
+
     // Accessors
     T&        at(size_t r, size_t c);
     const T&  at(size_t r, size_t c) const;
@@ -209,6 +211,16 @@ template <size_t R, size_t C, typename T>
 maths_inline const T& Mat<R, C, T>::operator()(size_t r, size_t c) const
 {
     return at(r, c);
+}
+
+template <size_t R, size_t C, typename T>
+maths_inline bool Mat<R, C, T>::operator==(const Mat<R, C, T>& rhs) const
+{
+    for (size_t i = 0; i < R * C; ++i) {
+        if (rhs.m[i] != m[i])
+            return false;
+    }
+    return true;
 }
 
 // Computation functions
