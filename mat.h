@@ -77,17 +77,17 @@ struct Mat
     // Operators
     Mat<R, C, T>  operator*(T rhs) const;
     Mat<R, C, T>& operator*=(T rhs);
-    Mat<R, C, T>  operator*(const Mat<R, C, T>& rhs) const;
-    Mat<R, C, T>& operator*=(const Mat<R, C, T>& rhs);
-    Vec<C, T>     operator*(const Vec<C, T>& rhs) const;
+    template <size_t D>
+    Mat<R, D, T>  operator*(const Mat<C, D, T>& rhs) const;
+    Vec<R, T>     operator*(const Vec<C, T>& rhs) const;
     T&            operator()(size_t r, size_t c);
     const T&      operator()(size_t r, size_t c) const;
 
     // Accessors
     T&        at(size_t r, size_t c);
     const T&  at(size_t r, size_t c) const;
-    Vec<R, T> get_row(size_t index) const;
-    Vec<C, T> get_column(size_t index) const;
+    Vec<C, T> get_row(size_t index) const;
+    Vec<R, T> get_column(size_t index) const;
     Vec<3, T> get_translation() const;
     void      set_row(size_t index, const Vec<R, T>& row);
     void      set_column(size_t index, const Vec<C, T>& col);
@@ -96,15 +96,15 @@ struct Mat
 
     // Computation
     Mat<R, C, T> multiply(T scalar) const;
-    Mat<R, C, T> multiply(const Mat<R, C, T>& rhs) const;
-    Vec<C, T>    multiply(const Vec<C, T>& rhs) const;
+    template <size_t D>
+    Mat<R, D, T> multiply(const Mat<C, D, T>& rhs) const;
+    Vec<R, T>    multiply(const Vec<C, T>& rhs) const;
     Vec<4, T>    transform_vector(const Vec<4, T>& v) const;
     Vec<3, T>    transform_vector(const Vec<3, T>& v, T& w) const;
     Vec<3, T>    transform_vector(const Vec<3, T>& v) const;
-    Mat<R, C, T> transposed();
+    Mat<C, R, T> transposed();
 
-	template<std::enable_if_t<R==C, bool> = true>
-    void         transpose();
+    void transpose();
 };
 
 // Accessor Functions
@@ -121,15 +121,15 @@ maths_inline const T& Mat<R, C, T>::at(size_t r, size_t c) const
 }
 
 template <size_t R, size_t C, typename T>
-maths_inline Vec<R, T> Mat<R, C, T>::get_row(size_t index) const
+maths_inline Vec<C, T> Mat<R, C, T>::get_row(size_t index) const
 {
-    return Vec<R, T>(&m[index * C]);
+    return Vec<C, T>(&m[index * C]);
 }
 
 template <size_t R, size_t C, typename T>
-maths_inline Vec<C, T> Mat<R, C, T>::get_column(size_t index) const
+maths_inline Vec<R, T> Mat<R, C, T>::get_column(size_t index) const
 {
-    Vec<C, T> col;
+    Vec<R, T> col;
     for (size_t i = 0; i < R; ++i)
         col[i] = at(i, index);
 
@@ -175,22 +175,15 @@ void Mat<R, C, T>::set_vectors(const Vec<3, T>& right, const Vec<3, T>& up, cons
 
 // Operators
 template <size_t R, size_t C, typename T>
-maths_inline Vec<C, T> Mat<R, C, T>::operator*(const Vec<C, T>& rhs) const
+maths_inline Vec<R, T> Mat<R, C, T>::operator*(const Vec<C, T>& rhs) const
 {
     return multiply(rhs);
 }
 
-template <size_t R, size_t C, typename T>
-maths_inline Mat<R, C, T> Mat<R, C, T>::operator*(const Mat<R, C, T>& rhs) const
+template <size_t R, size_t C, typename T> template <size_t D>
+maths_inline Mat<R, D, T> Mat<R, C, T>::operator*(const Mat<C, D, T>& rhs) const
 {
     return multiply(rhs);
-}
-
-template <size_t R, size_t C, typename T>
-maths_inline Mat<R, C, T>& Mat<R, C, T>::operator*=(const Mat<R, C, T>& rhs)
-{
-    *this = multiply(rhs);
-    return *this;
 }
 
 template <size_t R, size_t C, typename T>
@@ -220,18 +213,19 @@ maths_inline const T& Mat<R, C, T>::operator()(size_t r, size_t c) const
 
 // Computation functions
 template <size_t R, size_t C, typename T>
-inline Mat<R, C, T> Mat<R, C, T>::multiply(const Mat<R, C, T>& rhs) const
+template <size_t D>
+inline Mat<R, D, T> Mat<R, C, T>::multiply(const Mat<C, D, T>& rhs) const
 {
-    Mat<R, C, T> result;
+    Mat<R, D, T> result;
 
     for (size_t r = 0; r < R; ++r)
     {
-        for (size_t c = 0; c < C; ++c)
+        for (size_t d = 0; d < D; ++d)
         {
-            T& element = result.at(r, c);
+            T& element = result.at(r, d);
 
-            Vec<R, T> vr = get_row(r);
-            Vec<R, T> vc = rhs.get_column(c);
+            Vec<C, T> vr = get_row(r);
+            Vec<C, T> vc = rhs.get_column(d);
 
             element = dot(vr, vc);
         }
@@ -253,9 +247,9 @@ maths_inline Mat<R, C, T> Mat<R, C, T>::multiply(T scalar) const
 }
 
 template <size_t R, size_t C, typename T>
-maths_inline Vec<C, T> Mat<R, C, T>::multiply(const Vec<C, T>& v) const
+maths_inline Vec<R, T> Mat<R, C, T>::multiply(const Vec<C, T>& v) const
 {
-    Vec<C, T> result;
+    Vec<R, T> result;
     for (size_t r = 0; r < R; ++r)
     {
         result[r] = dot(v, get_row(r));
@@ -303,13 +297,6 @@ maths_inline Vec<3, T> Mat<R, C, T>::transform_vector(const Vec<3, T>& v) const
     return result.xyz;
 }
 
-template <size_t R, typename T>
-maths_inline void Mat<R, R, T>::transpose()
-{
-    Mat<R, R, T> t = this->transposed();
-    *this = t;
-}
-
 template <size_t R, size_t C, typename T>
 maths_inline Mat<C, R, T> Mat<R, C, T>::transposed()
 {
@@ -320,6 +307,14 @@ maths_inline Mat<C, R, T> Mat<R, C, T>::transposed()
             t.at(c, r) = at(r, c);
 
     return t;
+}
+
+template <size_t R, size_t C, typename T>
+maths_inline void Mat<R, C, T>::transpose()
+{
+    static_assert(R == C, "in-place transpose only possible for R==C");
+    Mat<C, R, T> t = transposed();
+    *this = t;
 }
 
 template <size_t R, size_t C, typename T>
