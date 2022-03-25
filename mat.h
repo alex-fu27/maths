@@ -102,6 +102,8 @@ struct Mat
     Vec<3, T>    transform_vector(const Vec<3, T>& v, T& w) const;
     Vec<3, T>    transform_vector(const Vec<3, T>& v) const;
     Mat<R, C, T> transposed();
+
+	template<std::enable_if_t<R==C, bool> = true>
     void         transpose();
 };
 
@@ -301,17 +303,17 @@ maths_inline Vec<3, T> Mat<R, C, T>::transform_vector(const Vec<3, T>& v) const
     return result.xyz;
 }
 
-template <size_t R, size_t C, typename T>
-maths_inline void Mat<R, C, T>::transpose()
+template <size_t R, typename T>
+maths_inline void Mat<R, R, T>::transpose()
 {
-    Mat<R, C, T> t = this->transposed();
-    *this          = t;
+    Mat<R, R, T> t = this->transposed();
+    *this = t;
 }
 
 template <size_t R, size_t C, typename T>
-maths_inline Mat<R, C, T> Mat<R, C, T>::transposed()
+maths_inline Mat<C, R, T> Mat<R, C, T>::transposed()
 {
-    Mat<R, C, T> t;
+    Mat<C, R, T> t;
 
     for (size_t r = 0; r < R; ++r)
         for (size_t c = 0; c < C; ++c)
