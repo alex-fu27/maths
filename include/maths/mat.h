@@ -21,18 +21,6 @@ struct Mat
             m[i] = data[i];
     }
 
-    template <size_t R2, size_t C2>
-    Mat(const Mat<R2, C2, T>& other)
-    {
-        for (size_t r = 0; r < R; ++r)
-        {
-            for (size_t c = 0; c < C; ++c)
-            {
-                m.at(r, c) = other.at(r, c);
-            }
-        }
-    }
-    
     // common ctrs for initializer lists
     template < size_t R2 = R, size_t C2 = C, typename = typename std::enable_if< R2 == 2 && C2 == 2 >::type >
     Mat<R, C, T>(T v00, T v01,
@@ -43,7 +31,7 @@ struct Mat
         m[2] = v10;
         m[3] = v11;
     }
-    
+
     template < size_t R2 = R, size_t C2 = C, typename = typename std::enable_if< R2 == 3 && C2 == 3 >::type >
     Mat<R, C, T>(T v00, T v01, T v02,
                  T v10, T v11, T v12,
@@ -59,7 +47,7 @@ struct Mat
         m[7] = v21;
         m[8] = v22;
     }
-    
+
     template < size_t R2 = R, size_t C2 = C, typename = typename std::enable_if< R2 == 4 && C2 == 4 >::type >
     Mat<R, C, T>(T v00, T v01, T v02, T v03,
                  T v10, T v11, T v12, T v13,
