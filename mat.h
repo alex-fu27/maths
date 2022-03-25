@@ -15,7 +15,7 @@ struct Mat
     // Constructors
     Mat(){};
 
-    Mat(T* data)
+    Mat(const T* data)
     {
         for (size_t i = 0; i < R * C; ++i)
             m[i] = data[i];
