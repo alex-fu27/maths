@@ -602,10 +602,11 @@ maths_inline Vec<N, T>& operator*=(Vec<N, T>& lhs, T a)
     return lhs;
 }
 
-template <size_t N, typename T>
-maths_inline Vec<N, T> operator*(const Vec<N, T>& lhs, T a)
+template <size_t N, typename T, typename U>
+maths_inline auto operator*(const Vec<N, T>& lhs, U a)
+	-> Vec<N, decltype(lhs.v[0] / a)>
 {
-    Vec<N, T> w(lhs);
+    Vec<N, decltype(lhs.v[0] / a)> w(lhs);
     w *= a;
     return w;
 }
@@ -635,10 +636,11 @@ maths_inline Vec<N, T>& operator/=(Vec<N, T>& lhs, T a)
     return lhs;
 }
 
-template <size_t N, typename T>
-maths_inline Vec<N, T> operator/(const Vec<N, T>& lhs, T a)
+template <size_t N, typename T, typename U>
+maths_inline auto operator/(const Vec<N, T>& lhs, U a)
+	-> Vec<N, decltype(lhs.v[0] / a)>
 {
-    Vec<N, T> w(lhs);
+    Vec<N, decltype(lhs.v[0] / a)> w(lhs);
     w /= a;
     return w;
 }
